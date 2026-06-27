@@ -28,12 +28,11 @@ describe("GET /", () => {
 });
 
 describe("GET /draw", () => {
-  it("returns a quote and sets an incremented cookie on first draw", async () => {
+  it("redirects to /kakugens/:id and sets an incremented cookie on first draw", async () => {
     await seedOne("智に働けば角が立つ", "夏目漱石");
     const res = await app.request("/draw", {}, env);
-    expect(res.status).toBe(200);
-    const body = await res.text();
-    expect(body).toContain("夏目漱石");
+    expect(res.status).toBe(303);
+    expect(res.headers.get("location")).toMatch(/^\/kakugens\/\d+$/);
     const sc = res.headers.get("set-cookie") || "";
     expect(sc).toContain("kakugen_draws=");
     expect(sc.toLowerCase()).toContain("httponly");
@@ -46,8 +45,7 @@ describe("GET /draw", () => {
     let cookie = "";
     for (let n = 1; n <= 3; n++) {
       const res = await app.request("/draw", { headers: cookie ? { Cookie: cookie } : {} }, env);
-      const body = await res.text();
-      expect(body).not.toContain("また明日");
+      expect(res.status).toBe(303);
       cookie = cookieFrom(res);
       expect(decodeURIComponent(cookie)).toContain(`|${n}`);
     }
@@ -61,8 +59,7 @@ describe("GET /draw", () => {
   it("resets the count when the cookie holds yesterday's date", async () => {
     await seedOne();
     const res = await app.request("/draw", { headers: { Cookie: "kakugen_draws=2000-01-01|3" } }, env);
-    const body = await res.text();
-    expect(body).not.toContain("また明日"); // reset → allowed
+    expect(res.status).toBe(303);
     expect(decodeURIComponent(res.headers.get("set-cookie") || "")).toMatch(/\|1/);
   });
 });

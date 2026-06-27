@@ -28,7 +28,7 @@ app.get("/draw", async (c) => {
   setCookie(c, COOKIE_NAME, serializeDrawState(next), {
     httpOnly: true, path: "/", sameSite: "Lax", maxAge: 60 * 60 * 48,
   });
-  return c.html(resultPage(k, remaining(next)));
+  return c.redirect(`/kakugens/${k.id}`, 303);
 });
 
 app.get("/kakugens/:id", async (c) => {
