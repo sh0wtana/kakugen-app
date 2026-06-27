@@ -10,14 +10,17 @@ export function registerPage(opts: { text?: string; author?: string; error?: str
         ${error ? html`<p class="err">${error}</p>` : ""}
         <div>
           <label for="text">格言</label>
-          <input id="text" name="text" value="${text}" maxlength="200" autocomplete="off">
+          <textarea id="text" name="text" maxlength="200" rows="4" autocomplete="off">${text}</textarea>
         </div>
         <div>
           <label for="author">著者</label>
           <input id="author" name="author" value="${author}" maxlength="60" autocomplete="off">
         </div>
-        <button class="submit" type="submit">納める</button>
+        <button class="submit" type="submit">登録する</button>
       </form>
-    </main>`;
+    </main>
+    <nav class="bar">
+      <a href="/">← 戻る</a>
+    </nav>`;
   return layout("格言を登録", body);
 }

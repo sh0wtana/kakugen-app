@@ -16,17 +16,13 @@ export function resultPage(k: Kakugen, remaining: number): HtmlEscapedString {
     <section class="wall">
       <div class="quote ${longClass}">${inkChars(k.text)}</div>
       <div class="sig">
-        <span class="seal">落款</span>
-        <span>
-          <span class="author">${k.author}</span>
-          ${k.citation ? html`<span class="citation">${k.citation}</span>` : ""}
-        </span>
+        <span class="author">${k.author}</span>
       </div>
     </section>
     <nav class="bar">
       <a href="/">← 戻る</a>
       <span class="muted">残り ${remaining} 回</span>
-      ${remaining > 0 ? html`<a href="/draw">もう一度引く</a>` : html`<a href="/new">登録する</a>`}
+      ${remaining > 0 ? html`<a href="/draw">もう一度引く</a>` : ""}
     </nav>`;
   return layout(k.author, body);
 }
