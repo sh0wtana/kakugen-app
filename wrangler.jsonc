@@ -8,7 +8,7 @@
     {
       "binding": "DB",
       "database_name": "kakugen",
-      "database_id": "PLACEHOLDER_REPLACE_IN_TASK_7",
+      "database_id": "832265b0-8fe4-4645-b174-fff94494a7e4",
       "migrations_dir": "migrations"
     }
   ]
