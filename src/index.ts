@@ -44,8 +44,8 @@ app.get("/new", (c) => c.html(registerPage()));
 
 app.post("/kakugens", async (c) => {
   const body = await c.req.parseBody();
-  const text = String(body.text ?? "").trim();
-  const author = String(body.author ?? "").trim();
+  const text = String(body.text ?? "").trim().slice(0, 200);
+  const author = String(body.author ?? "").trim().slice(0, 60);
   if (!text || !author) {
     return c.html(
       registerPage({ text, author, error: "格言と著者の両方を入力してください。" }),
