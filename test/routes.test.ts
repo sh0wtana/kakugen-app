@@ -85,3 +85,56 @@ describe("GET /kakugens/:id", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("GET /new", () => {
+  it("renders the register form", async () => {
+    const res = await app.request("/new", {}, env);
+    expect(res.status).toBe(200);
+    const body = await res.text();
+    expect(body).toContain("格言");
+    expect(body).toContain("著者");
+    expect(body).toContain('name="text"');
+    expect(body).toContain('name="author"');
+  });
+});
+
+describe("POST /kakugens", () => {
+  function form(text: string, author: string) {
+    return {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ text, author }).toString(),
+    } as RequestInit;
+  }
+
+  it("rejects empty fields with 422 and re-renders the form", async () => {
+    const res = await app.request("/kakugens", form("   ", ""), env);
+    expect(res.status).toBe(422);
+    expect(await res.text()).toContain("入力してください");
+    const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM kakugen").first<{ n: number }>();
+    expect(n!.n).toBe(0);
+  });
+
+  it("inserts a trimmed user row and 303-redirects to its result page", async () => {
+    const res = await app.request("/kakugens", form("  我が道を行く  ", "  自分  "), env);
+    expect(res.status).toBe(303);
+    const loc = res.headers.get("location")!;
+    expect(loc).toMatch(/^\/kakugens\/\d+$/);
+
+    const row = await env.DB.prepare("SELECT * FROM kakugen").first<any>();
+    expect(row.text).toBe("我が道を行く");
+    expect(row.author).toBe("自分");
+    expect(row.origin).toBe("user");
+    expect(row.citation).toBeNull();
+
+    const page = await app.request(loc, {}, env);
+    // The quote is split into per-character spans, so assert on the author.
+    expect(await page.text()).toContain("自分");
+  });
+
+  it("does not consume a draw", async () => {
+    const res = await app.request("/kakugens", form("一期一会", "茶道"), env);
+    // PRG redirect carries no draw cookie
+    expect(res.headers.get("set-cookie")).toBeNull();
+  });
+});

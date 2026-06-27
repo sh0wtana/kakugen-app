@@ -4,10 +4,11 @@ import {
   COOKIE_NAME, jstDate, parseDrawState, serializeDrawState,
   atLimit, increment, remaining,
 } from "./drawLimit";
-import { randomKakugen, getKakugen } from "./db";
+import { randomKakugen, getKakugen, insertKakugen } from "./db";
 import { homePage } from "./views/home";
 import { resultPage } from "./views/result";
 import { limitPage } from "./views/limit";
+import { registerPage } from "./views/register";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -37,6 +38,22 @@ app.get("/kakugens/:id", async (c) => {
   if (!k) return c.notFound();
   const state = parseDrawState(getCookie(c, COOKIE_NAME), jstDate());
   return c.html(resultPage(k, remaining(state)));
+});
+
+app.get("/new", (c) => c.html(registerPage()));
+
+app.post("/kakugens", async (c) => {
+  const body = await c.req.parseBody();
+  const text = String(body.text ?? "").trim();
+  const author = String(body.author ?? "").trim();
+  if (!text || !author) {
+    return c.html(
+      registerPage({ text, author, error: "格言と著者の両方を入力してください。" }),
+      422
+    );
+  }
+  const id = await insertKakugen(c.env.DB, text, author);
+  return c.redirect(`/kakugens/${id}`, 303);
 });
 
 export default app;
